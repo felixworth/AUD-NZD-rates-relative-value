@@ -41,7 +41,7 @@ from plotly.subplots import make_subplots
 
 from src.fetch import forward_fill_interior
 from src.rolls import load_roll_dates
-from src.utils import get_logger, load_config, project_path, read_rates
+from src.utils import get_logger, load_config, project_path, read_rates, with_gap_breaks
 
 log = get_logger("spreads")
 
@@ -148,9 +148,7 @@ def instrument_chart(long: pd.DataFrame, summary: pd.DataFrame) -> go.Figure:
     for k, name in enumerate(names):
         row, col = k // 3 + 1, k % 3 + 1
         d = long[long["instrument"] == name]
-        line = d.set_index("date")["value_bp"]
-        gap_starts = line.index[1:][np.diff(line.index.values) > np.timedelta64(7, "D")]
-        line = pd.concat([line, pd.Series(np.nan, index=gap_starts - pd.Timedelta(days=1))]).sort_index()
+        line = with_gap_breaks(d.set_index("date")["value_bp"])
         fig.add_trace(go.Scatter(x=line.index, y=line.values, mode="lines", line=dict(width=1, color="#1f77b4"),
                                  name="value (bp)", showlegend=k == 0, legendgroup="v"), row=row, col=col)
         rolls = d[d["roll_day"]]

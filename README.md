@@ -17,7 +17,7 @@ an RV trader bets on the **relationship between two or more rates** — for exam
 Positions are built so that a parallel move of the whole curve makes roughly zero
 profit or loss; the trade only makes money if the relationship returns to normal.
 
-*(Methodology for scanner, PCA, backtest and PnL: coming.)*
+*(Methodology for PCA, backtest and PnL: coming.)*
 
 ---
 
@@ -159,6 +159,37 @@ Back-adjusted NZ bond yields are never used.
 
 ---
 
+## Step 2 — Scanner (`src/scanner.py`)
+
+For each instrument the scanner asks: *how unusual is today's level?*
+
+* **z-score** = (today's value − average over the last N trading days) / standard deviation
+  over the same window, for N = 60 and 250. The window ends today and never uses later
+  data. A z-score of +2 means the instrument is two standard deviations above its recent average.
+* Only **real** values count: days where an input was forward-filled over a holiday are left out
+  of the statistics and never get a z-score (so they can never trigger a signal).
+* **Insufficient history:** the z-score is left empty if fewer than 80% of the window's trading
+  days have real values, or if the window contains more than 10 trading days in a row
+  without data (e.g. the NZ 2y bond gaps).
+* **Percentile** = share of all real values up to and including today that are at or below
+  today's value (needs at least 250 values).
+* The daily table (`outputs/scanner_<data date>.csv` and `outputs/scanner_latest.csv`) ranks
+  instruments by |z_250| (`signal_strength`) and marks a **strong** signal where z_60 and z_250
+  have the same sign and are both beyond ±2. Instruments in a post-roll block, with a pending
+  roll, insufficient history, a forward-filled latest value or stale data are shown but marked
+  **no new trades**. One-day and one-week changes that span an NZ bond roll are left blank.
+* `data/processed/scanner_history.csv` keeps the z-scores for every date (input to the backtest).
+* Charts per instrument in `outputs/charts/scanner/`: value with the 250-day mean and ±1/±2
+  standard-deviation bands, and the 60- and 250-day z-scores.
+
+Note: a z-score measures how far an instrument is from its *recent* average, a percentile
+from its *whole* history. They can disagree: AU–NZ 2y is near its widest ever (98.7th
+percentile) but only +0.9 sd vs its 250-day average, because it has been wide all year.
+
+![AU-NZ 2y with z-score bands](outputs/charts/scanner/au_nz_gov_2y.png)
+
+---
+
 ## How to run
 
 ```powershell
@@ -169,6 +200,7 @@ pip install -r requirements.txt
 python -m src.fetch      # update data/processed/rates.csv
 python -m src.rolls      # flag new roll candidates, back-adjust, chart
 python -m src.spreads    # build the RV instruments (bp)
+python -m src.scanner    # z-scores, percentiles and today's ranked table
 python -m src.diagnostics   # one-off check of the 2013 RBA file join
 pytest                   # run the tests
 ```

@@ -16,6 +16,8 @@ paths:
   rates_adjusted_file: data/processed/rates_adjusted.csv  # back-adjusted nz_gov_*_adj, percent
   instruments_file: data/processed/instruments.csv          # all instruments, bp, long format
   instrument_summary_file: data/processed/instrument_summary.csv
+  scanner_history_file: data/processed/scanner_history.csv  # z-scores for every date (used by the backtest)
+  outputs_dir: outputs                                       # scanner_<data date>.csv, scanner_latest.csv
   charts_dir: outputs/charts
   diagnostics_dir: outputs/diagnostics
 
@@ -112,6 +114,18 @@ instruments:
     nz_swap_spread_2y: {group: "NZ swap spread",    legs: {nz_swap_2y: 1, nz_gov_2y: -1}}
     nz_swap_spread_5y: {group: "NZ swap spread",    legs: {nz_swap_5y: 1, nz_gov_5y: -1}}
     nz_swap_spread_10y: {group: "NZ swap spread",   legs: {nz_swap_10y: 1, nz_gov_10y: -1}}
+
+# ---------------------------------------------------------------------------
+# Scanner (Step 2)
+# ---------------------------------------------------------------------------
+scanner:
+  windows: [60, 250]        # rolling z-score windows, in trading days (weekday calendar)
+  min_real_fraction: 0.8    # at least 80% of the window must be real (published, not filled) values
+  max_gap_days: 10          # a window containing more than 10 consecutive trading days with no
+                            # real value -> "insufficient history" (z-score = NaN)
+  signal_z: 2.0             # "strong" signal: z_60 and z_250 same sign and both beyond +/-2
+  percentile_min_obs: 250   # percentile vs history needs at least this many real values
+  top_n: 5                  # instruments described in plain English on each run
 
 # ---------------------------------------------------------------------------
 # Benchmark-roll detection

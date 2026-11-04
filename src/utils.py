@@ -6,6 +6,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import pandas as pd
 import yaml
 
@@ -41,6 +42,17 @@ def read_rates(path: str | Path) -> pd.DataFrame | None:
     if not path.exists():
         return None
     return pd.read_csv(path, index_col="date", parse_dates=["date"]).sort_index()
+
+
+def with_gap_breaks(data: pd.DataFrame | pd.Series, max_days: int = 7) -> pd.DataFrame | pd.Series:
+    """For charts: insert an empty row before any jump of more than `max_days` calendar days,
+    so plotted lines break at data gaps instead of drawing a straight line across them."""
+    idx = data.index
+    starts = idx[1:][np.diff(idx.values) > np.timedelta64(max_days, "D")]
+    if len(starts) == 0:
+        return data
+    blank = data.iloc[:0].reindex(starts - pd.Timedelta(days=1))
+    return pd.concat([data, blank]).sort_index()
 
 
 def write_rates(df: pd.DataFrame, path: str | Path) -> None:
