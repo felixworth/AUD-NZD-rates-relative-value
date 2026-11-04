@@ -17,7 +17,7 @@ an RV trader bets on the **relationship between two or more rates** — for exam
 Positions are built so that a parallel move of the whole curve makes roughly zero
 profit or loss; the trade only makes money if the relationship returns to normal.
 
-*(Methodology for PCA, backtest and PnL: coming.)*
+PCA butterflies (`src/pca.py`) re-weight the 2s5s10s fly so it is (approximately) neutral to parallel shifts and slope changes of the curve; see Step 3. *(Backtest and PnL: coming.)*
 
 ---
 
@@ -30,6 +30,7 @@ profit or loss; the trade only makes money if the relationship returns to normal
 | `au_gov_2y`, `au_gov_3y`, `au_gov_5y`, `au_gov_10y` | RBA table F2 | FCMYGBAG2D / 3D / 5D / 10D | Australian Government nominal bond yields, "interpolated, N years maturity" (see below) |
 | `nz_gov_2y`, `nz_gov_5y`, `nz_gov_10y` | RBNZ table B2 | INM.DG102 / DG105 / DG110.NZZCF | NZ government **benchmark** bond closing yields |
 | `nz_swap_2y`, `nz_swap_5y`, `nz_swap_10y` | RBNZ table B2 | INM.DS02 / DS05 / DS10.NZZC | NZ swap rates (close) |
+| `nz_swap_1y`, `_3y`, `_4y`, `_7y`, `_15y` | RBNZ table B2 | INM.DS01 / DS03 / DS04 / DS07 / DS15.NZZC | Extra NZ swap tenors, used only in the NZ PCA fit |
 
 Australia has government bonds only (no swap data), so AUD instruments are built from bonds.
 The full mapping, including the original series names, is saved to `data/processed/series_meta.csv`
@@ -190,6 +191,48 @@ percentile) but only +0.9 sd vs its 250-day average, because it has been wide al
 
 ---
 
+## Step 3 — PCA butterflies (`src/pca.py`)
+
+A 50/50 fly (`5y − 0.5×2y − 0.5×10y`) is only roughly duration-neutral. It still
+makes or loses money when the whole curve shifts in parallel (PC1, “level”) or
+pivots (PC2, “slope”), because the three legs do not have equal sensitivity to
+those moves. PCA weights are chosen so that, on recent *yield changes*, a 1 unit
+5y position hedged with `w2` of 2y and `w10` of 10y has (approximately) zero
+exposure to PC1 and PC2. What is left is mostly PC3 — genuine curvature.
+
+**Fit** (each date *t*, no look-ahead): covariance PCA on daily yield changes in bp
+over the trailing 250 trading days, using only data dated *t* or earlier. Forward-filled
+days and NZ-bond roll days are left out of the fit.
+
+* **NZ:** all B2 swap tenors (1y, 2y, 3y, 4y, 5y, 7y, 10y, 15y). A tenor that is
+  missing for too much of the window is dropped, so 15y can join later without
+  blocking earlier dates. The fly itself is still 2s5s10s.
+* **AU:** government bonds 2y / 3y / 5y / 10y, from 2 September 2013.
+
+Eigenvector signs are fixed so PC1 loadings sum positive (a parallel sell-off)
+and PC2 is positive at the long end (a steepener). That stops the stored loadings
+flipping sign from one day to the next with no economic reason. The 5y weight is
+always 1; `w2` and `w10` solve `w · PC1 = 0` and `w · PC2 = 0` on the fly legs.
+
+**Z-scores:** at date *t* the fly’s last 60/250 days are *rebuilt with that date’s
+weights* (not stitched from yesterday’s weights) and then z-scored. A change in
+the weights cannot by itself create a signal. The PCA flies `nz_swap_pca_fly` and
+`au_gov_pca_fly` are added to the scanner.
+
+**Diagnostics** (in `outputs/`):
+
+* `pca_weights.csv` — daily `w2`, `w5=1`, `w10` and variance explained by PC1–3
+* `pca_oos.csv` — walk-forward: yesterday’s weights and loadings applied to today’s
+  change. The PCA fly’s daily changes should have near-zero correlation with PC1
+  and PC2; the 50/50 fly’s should not.
+* Charts: `pca_variance`, `pca_fly_vs_simple`, `pca_oos`
+
+Run `python -m src.pca` before `python -m src.scanner` so the scanner picks up the flies.
+
+![PCA fly vs 50/50](outputs/charts/pca_fly_vs_simple.png)
+
+---
+
 ## How to run
 
 ```powershell
@@ -200,6 +243,7 @@ pip install -r requirements.txt
 python -m src.fetch      # update data/processed/rates.csv
 python -m src.rolls      # flag new roll candidates, back-adjust, chart
 python -m src.spreads    # build the RV instruments (bp)
+python -m src.pca        # PCA-weighted 2s5s10s flies and diagnostics
 python -m src.scanner    # z-scores, percentiles and today's ranked table
 python -m src.diagnostics   # one-off check of the 2013 RBA file join
 pytest                   # run the tests

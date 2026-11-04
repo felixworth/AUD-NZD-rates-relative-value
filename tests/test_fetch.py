@@ -88,6 +88,15 @@ def test_parse_rbnz_xlsx(tmp_path):
     assert published == "2026-11-03"
 
 
+def test_parse_rbnz_skips_optional_pca_series(tmp_path):
+    path = write_rbnz_xlsx(tmp_path / "hb2.xlsx")
+    cfg = {**CFG["rbnz"]["series"], **CFG["rbnz"]["pca_series"]}
+    data, _, _ = parse_rbnz_file(path, cfg, optional=set(CFG["rbnz"]["pca_series"]))
+    assert "nz_swap_2y" in data.columns and "nz_swap_1y" not in data.columns
+    with pytest.raises(SourceError):
+        parse_rbnz_file(path, cfg)
+
+
 def test_parse_rbnz_rejects_swap_column_that_is_not_a_swap(tmp_path):
     path = write_rbnz_xlsx(tmp_path / "hb2.xlsx", swap_group="Bank bill yields")
     with pytest.raises(SourceError):

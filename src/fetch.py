@@ -222,11 +222,13 @@ def get_rba(cfg: dict[str, Any], existing: pd.DataFrame | None) -> SourceResult:
 # Parsing RBNZ B2 (manual files)
 # =============================================================================
 
-def parse_rbnz_file(path: Path, series_cfg: dict[str, dict]) -> tuple[pd.DataFrame, list[dict], str | None]:
+def parse_rbnz_file(path: Path, series_cfg: dict[str, dict], optional: set[str] | None = None
+                    ) -> tuple[pd.DataFrame, list[dict], str | None]:
     """Parse one RBNZ B2 file (.xlsx as downloaded, or the 'Data' sheet saved as .csv).
 
     Layout of the 'Data' sheet: 5 header rows - Group, Series, Notes, Unit, Series Id -
     then one row per date with the date in the first column.
+    `optional` clean names (PCA extra tenors) are skipped if this file does not have them.
     Returns (data in percent, metadata per series, publication date or None).
     """
     if path.suffix.lower() == ".csv":
@@ -244,9 +246,13 @@ def parse_rbnz_file(path: Path, series_cfg: dict[str, dict]) -> tuple[pd.DataFra
     names = text.iloc[sid_row - 3].str.strip().tolist()
     units = text.iloc[sid_row - 1].str.strip().tolist()
 
+    optional = set(optional or [])
     cols, meta = {}, []
     for clean, spec in series_cfg.items():
         if spec["id"] not in ids:
+            if clean in optional:
+                log.info("%s: optional series %s (%s) not in this file — skipped", path.name, spec["id"], clean)
+                continue
             raise SourceError(f"{path.name}: series {spec['id']} ({clean}) not found")
         j = ids.index(spec["id"])
         if spec["group_contains"].lower() not in groups[j].lower() or names[j].lower() != spec["name_is"].lower():
@@ -297,7 +303,8 @@ def get_rbnz(cfg: dict[str, Any]) -> SourceResult:
 
     parsed = []
     for p in files:
-        data, meta, published = parse_rbnz_file(p, rcfg["series"])
+        series_cfg = {**rcfg["series"], **rcfg.get("pca_series", {})}
+        data, meta, published = parse_rbnz_file(p, series_cfg, optional=set(rcfg.get("pca_series", {})))
         published = published or str(data.index.max().date())
         parsed.append((published, p.name, data, meta))
         log.info("RBNZ file %s: published %s, data %s to %s",
@@ -451,7 +458,7 @@ def run(cfg: dict[str, Any] | None = None, today: pd.Timestamp | None = None) ->
         log.error("Source(s) failed: %s. rates.csv left unchanged (previous data kept).", ", ".join(failed))
         return 1
 
-    order = [*cfg["rba"]["series"], *cfg["rbnz"]["series"]]
+    order = [*cfg["rba"]["series"], *cfg["rbnz"]["series"], *cfg["rbnz"].get("pca_series", {})]
     incoming = pd.concat([r.data for r in results.values()], axis=1, sort=True).reindex(columns=order)
     merged, events = upsert(existing, incoming, today, cfg["update"]["overwrite_window_days"])
     merged = merged.reindex(columns=list(dict.fromkeys([*order, *merged.columns])))

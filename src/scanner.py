@@ -139,7 +139,11 @@ def describe(row: pd.Series, start: pd.Timestamp) -> str:
     """One-line plain-English description of an instrument's current reading."""
     name, v, z, pct = row["instrument"], row["value_bp"], row["z_250"], row["percentile"]
     high = z > 0 if pd.notna(z) else v > 0
-    if name.startswith("au_nz_gov_"):
+    if name.endswith("pca_fly"):
+        mkt = "NZ swap" if name.startswith("nz") else "AU bond"
+        what = (f"{mkt} PCA 2s5s10s fly is {v:+.1f}bp "
+                f"(PC1/PC2-neutral; 5y {'cheap' if high else 'rich'} vs the wings)")
+    elif name.startswith("au_nz_gov_"):
         t = name.split("_")[-1]
         what = f"AU {t} govt yield is {abs(v):.0f}bp {'above' if v >= 0 else 'below'} NZ {t}"
     elif name.startswith("nz_swap_spread_"):
@@ -268,9 +272,22 @@ def run(cfg: dict[str, Any] | None = None, today: pd.Timestamp | None = None) ->
     instruments = pd.read_csv(paths["instruments_file"], parse_dates=["date"], keep_default_na=False,
                               na_values=[""], dtype={"roll_info": str})
     instruments["roll_info"] = instruments["roll_info"].fillna("")
-    defs = cfg["instruments"]["definitions"]
+    defs = dict(cfg["instruments"]["definitions"])
+    for spec in cfg.get("pca", {}).get("curves", {}).values():
+        defs.setdefault(spec["fly_name"], {"group": spec["group"], "legs": {spec["belly"]: 1, spec["wings"][0]: 1, spec["wings"][1]: 1}})
+
+    pca_hist = None
+    pca_path = paths.get("pca_flies_file")
+    if pca_path and pca_path.exists():
+        pca_hist = pd.read_csv(pca_path, parse_dates=["date"], keep_default_na=False, na_values=[""],
+                              dtype={"roll_info": str})
+        if "roll_info" not in pca_hist.columns:
+            pca_hist["roll_info"] = ""
+        pca_hist["roll_info"] = pca_hist["roll_info"].fillna("")
 
     history = build_history(instruments, cfg)
+    if pca_hist is not None and len(pca_hist):
+        history = pd.concat([history, pca_hist], ignore_index=True, sort=False)
     hist_out = history.drop(columns=["roll_info"]).copy()
     hist_out["date"] = hist_out["date"].dt.strftime("%Y-%m-%d")
     hist_out.round(4).to_csv(paths["scanner_history_file"], index=False)

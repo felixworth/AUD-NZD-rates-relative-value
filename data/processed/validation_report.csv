@@ -1,12 +1,19 @@
 severity,check,series,date,detail
+info,stale_value,nz_swap_1y,2026-01-07,2.6100 unchanged for 5 obs since 2025-12-30
+info,stale_value,nz_swap_1y,2025-08-01,3.0900 unchanged for 6 obs since 2025-07-25
+info,stale_value,nz_swap_1y,2025-02-24,3.4800 unchanged for 5 obs since 2025-02-18
 info,big_move,nz_gov_2y,2023-12-14,-31.0bp vs previous value
 info,big_move,nz_gov_5y,2023-12-14,-27.0bp vs previous value
 info,big_move,nz_swap_2y,2023-12-14,-29.0bp vs previous value
 info,big_move,nz_swap_5y,2023-12-14,-26.0bp vs previous value
+info,big_move,nz_swap_3y,2023-12-14,-28.0bp vs previous value
+info,big_move,nz_swap_4y,2023-12-14,-27.0bp vs previous value
 info,big_move,nz_gov_2y,2023-11-03,-30.0bp vs previous value
 info,big_move,nz_gov_10y,2023-11-02,-26.0bp vs previous value
 info,big_move,nz_gov_2y,2023-05-24,-31.0bp vs previous value
 info,big_move,nz_swap_2y,2023-05-24,-34.0bp vs previous value
+info,big_move,nz_swap_1y,2023-05-24,-29.0bp vs previous value
+info,big_move,nz_swap_3y,2023-05-24,-27.0bp vs previous value
 info,big_move,au_gov_2y,2023-03-16,-26.6bp vs previous value
 info,big_move,nz_swap_2y,2023-03-14,-28.0bp vs previous value
 info,big_move,au_gov_2y,2022-10-04,-30.8bp vs previous value
@@ -20,21 +27,42 @@ info,big_move,au_gov_3y,2022-06-14,+33.2bp vs previous value
 info,big_move,au_gov_5y,2022-06-14,+31.5bp vs previous value
 info,big_move,au_gov_10y,2022-06-14,+28.3bp vs previous value
 info,big_move,nz_swap_2y,2022-06-14,+26.0bp vs previous value
+info,big_move,nz_swap_1y,2022-06-14,+30.0bp vs previous value
 info,big_move,au_gov_10y,2021-10-29,+25.0bp vs previous value
 info,big_move,nz_gov_2y,2021-10-29,+100.0bp vs previous value
 info,big_move,au_gov_2y,2021-10-28,+29.6bp vs previous value
 info,missing_dates,nz_gov_2y,2021-10-28,11 weekdays missing 2021-10-14 to 2021-10-28
 info,big_move,nz_swap_2y,2021-10-18,+28.0bp vs previous value
+info,big_move,nz_swap_3y,2021-10-18,+28.0bp vs previous value
 info,stale_value,nz_gov_2y,2021-08-31,0.9100 unchanged for 5 obs since 2021-08-25
+info,stale_value,nz_swap_1y,2021-06-09,0.3600 unchanged for 6 obs since 2021-06-01
+info,stale_value,nz_swap_1y,2021-05-18,0.3800 unchanged for 5 obs since 2021-05-12
+info,stale_value,nz_swap_1y,2021-05-04,0.3600 unchanged for 8 obs since 2021-04-22
+info,stale_value,nz_swap_1y,2021-04-14,0.3400 unchanged for 5 obs since 2021-04-08
+info,stale_value,nz_swap_1y,2021-02-15,0.2800 unchanged for 8 obs since 2021-02-03
+info,stale_value,nz_swap_1y,2021-02-02,0.2600 unchanged for 6 obs since 2021-01-26
+info,stale_value,nz_swap_1y,2021-01-13,0.2500 unchanged for 7 obs since 2021-01-05
+info,stale_value,nz_swap_4y,2020-12-31,0.4400 unchanged for 5 obs since 2020-12-23
 info,stale_value,nz_swap_2y,2020-12-15,0.2600 unchanged for 9 obs since 2020-12-03
+info,stale_value,nz_swap_3y,2020-12-15,0.3000 unchanged for 6 obs since 2020-12-08
+info,stale_value,nz_swap_4y,2020-12-15,0.3600 unchanged for 5 obs since 2020-12-09
 info,big_move,nz_gov_2y,2020-11-20,-84.0bp vs previous value
 info,missing_dates,nz_gov_2y,2020-11-19,265 weekdays missing 2019-11-15 to 2020-11-19
+info,stale_value,nz_swap_1y,2020-11-05,0.0600 unchanged for 9 obs since 2020-10-23
 info,stale_value,nz_swap_5y,2020-09-17,0.1200 unchanged for 6 obs since 2020-09-10
+info,stale_value,nz_swap_4y,2020-09-17,0.0700 unchanged for 5 obs since 2020-09-11
+info,stale_value,nz_swap_1y,2020-08-26,0.1600 unchanged for 6 obs since 2020-08-19
+info,stale_value,nz_swap_1y,2020-08-11,0.2300 unchanged for 10 obs since 2020-07-29
 info,stale_value,nz_swap_2y,2020-07-22,0.2100 unchanged for 7 obs since 2020-07-14
+info,stale_value,nz_swap_1y,2020-07-16,0.2500 unchanged for 9 obs since 2020-07-06
+info,stale_value,nz_swap_1y,2020-07-01,0.2400 unchanged for 6 obs since 2020-06-24
+info,stale_value,nz_swap_1y,2020-06-23,0.2600 unchanged for 10 obs since 2020-06-10
 info,big_move,nz_gov_5y,2020-03-23,-46.0bp vs previous value
 info,big_move,nz_gov_10y,2020-03-23,-51.0bp vs previous value
 info,big_move,nz_swap_5y,2020-03-23,-27.0bp vs previous value
 info,big_move,nz_swap_10y,2020-03-23,-37.0bp vs previous value
+info,big_move,nz_swap_7y,2020-03-23,-32.0bp vs previous value
+info,big_move,nz_swap_15y,2020-03-23,-38.0bp vs previous value
 info,big_move,au_gov_10y,2020-03-20,-34.7bp vs previous value
 info,big_move,nz_gov_5y,2020-03-20,-39.0bp vs previous value
 info,big_move,nz_gov_10y,2020-03-20,-43.0bp vs previous value
@@ -42,20 +70,49 @@ info,big_move,au_gov_10y,2020-03-19,+27.2bp vs previous value
 info,big_move,nz_gov_5y,2020-03-19,+35.0bp vs previous value
 info,big_move,nz_gov_10y,2020-03-19,+43.0bp vs previous value
 info,big_move,nz_swap_10y,2020-03-19,+29.0bp vs previous value
+info,big_move,nz_swap_15y,2020-03-19,+29.0bp vs previous value
 info,big_move,nz_gov_5y,2020-03-16,-27.0bp vs previous value
+info,stale_value,nz_swap_1y,2020-01-23,1.2000 unchanged for 5 obs since 2020-01-17
+info,stale_value,nz_swap_1y,2019-02-28,1.8600 unchanged for 5 obs since 2019-02-22
 info,stale_value,nz_swap_2y,2018-11-15,2.1900 unchanged for 5 obs since 2018-11-09
 info,missing_dates,nz_gov_2y,2018-10-30,22 weekdays missing 2018-10-01 to 2018-10-30
+info,stale_value,nz_swap_1y,2018-09-28,1.9700 unchanged for 5 obs since 2018-09-24
+info,stale_value,nz_swap_1y,2018-09-18,1.9300 unchanged for 8 obs since 2018-09-07
 info,stale_value,nz_swap_2y,2018-09-17,1.9800 unchanged for 5 obs since 2018-09-11
+info,stale_value,nz_swap_7y,2018-09-14,2.5500 unchanged for 5 obs since 2018-09-10
+info,stale_value,nz_swap_1y,2018-08-29,1.9600 unchanged for 8 obs since 2018-08-20
+info,stale_value,nz_swap_1y,2018-07-04,2.0600 unchanged for 5 obs since 2018-06-28
+info,stale_value,nz_swap_3y,2018-06-14,2.4000 unchanged for 5 obs since 2018-06-08
+info,stale_value,nz_swap_1y,2018-06-12,2.0800 unchanged for 7 obs since 2018-06-01
+info,stale_value,nz_swap_1y,2018-05-29,2.0500 unchanged for 7 obs since 2018-05-21
+info,stale_value,nz_swap_1y,2018-05-09,2.1200 unchanged for 7 obs since 2018-05-01
+info,stale_value,nz_swap_1y,2018-02-09,1.9700 unchanged for 7 obs since 2018-01-31
 info,stale_value,nz_swap_2y,2018-02-07,2.1700 unchanged for 9 obs since 2018-01-25
+info,stale_value,nz_swap_1y,2018-01-15,1.9900 unchanged for 7 obs since 2018-01-05
 info,stale_value,nz_gov_5y,2017-12-27,2.2800 unchanged for 5 obs since 2017-12-19
+info,stale_value,nz_swap_1y,2017-12-20,1.9900 unchanged for 7 obs since 2017-12-12
+info,stale_value,nz_swap_1y,2017-11-29,1.9900 unchanged for 9 obs since 2017-11-17
+info,stale_value,nz_swap_1y,2017-11-03,2.0100 unchanged for 10 obs since 2017-10-20
+info,stale_value,nz_swap_1y,2017-10-19,2.0200 unchanged for 13 obs since 2017-10-03
 info,stale_value,nz_swap_2y,2017-10-18,2.1900 unchanged for 5 obs since 2017-10-12
 info,stale_value,nz_swap_2y,2017-08-28,2.1800 unchanged for 5 obs since 2017-08-22
+info,stale_value,nz_swap_1y,2017-08-25,2.0100 unchanged for 6 obs since 2017-08-18
+info,stale_value,nz_swap_1y,2017-08-01,2.0300 unchanged for 8 obs since 2017-07-21
+info,stale_value,nz_swap_1y,2017-06-15,2.0000 unchanged for 5 obs since 2017-06-09
+info,stale_value,nz_swap_3y,2017-06-14,2.3800 unchanged for 5 obs since 2017-06-08
+info,stale_value,nz_swap_1y,2017-06-01,2.0200 unchanged for 6 obs since 2017-05-25
 info,big_move,nz_gov_5y,2017-05-25,+27.0bp vs previous value
+info,stale_value,nz_swap_1y,2017-03-22,2.0600 unchanged for 5 obs since 2017-03-16
+info,stale_value,nz_swap_3y,2017-03-08,2.6000 unchanged for 5 obs since 2017-03-02
 info,stale_value,nz_swap_2y,2017-03-07,2.3400 unchanged for 6 obs since 2017-02-28
+info,stale_value,nz_swap_1y,2017-03-03,2.0900 unchanged for 5 obs since 2017-02-27
+info,stale_value,nz_swap_1y,2017-01-26,2.1400 unchanged for 5 obs since 2017-01-20
 info,big_move,au_gov_10y,2016-11-10,+28.0bp vs previous value
+info,big_move,nz_swap_15y,2016-11-10,+26.0bp vs previous value
 info,stale_value,nz_swap_2y,2015-05-28,3.3900 unchanged for 5 obs since 2015-05-22
 info,big_move,nz_gov_2y,2014-12-15,+42.0bp vs previous value
 info,missing_dates,nz_gov_2y,2014-12-12,302 weekdays missing 2013-10-17 to 2014-12-12
+info,stale_value,nz_swap_15y,2014-11-24,4.6100 unchanged for 5 obs since 2014-11-18
 info,big_move,au_gov_3y,2013-09-02,+30.0bp vs previous value
 info,big_move,au_gov_5y,2013-09-02,+53.8bp vs previous value
 info,missing_dates,au_gov_2y,2013-08-30,75 weekdays missing 2013-05-20 to 2013-08-30
@@ -63,6 +120,8 @@ info,missing_dates,au_gov_3y,2013-08-30,75 weekdays missing 2013-05-20 to 2013-0
 info,missing_dates,au_gov_5y,2013-08-30,75 weekdays missing 2013-05-20 to 2013-08-30
 info,big_move,au_gov_10y,2013-06-24,+28.2bp vs previous value
 info,big_move,nz_gov_10y,2013-06-20,+29.0bp vs previous value
+info,stale_value,nz_swap_1y,2013-05-01,2.6900 unchanged for 9 obs since 2013-04-18
+info,stale_value,nz_swap_1y,2013-03-13,2.7600 unchanged for 5 obs since 2013-03-07
 info,big_move,au_gov_10y,2012-03-15,+28.5bp vs previous value
 info,big_move,nz_gov_2y,2012-02-21,+40.0bp vs previous value
 info,big_move,nz_gov_5y,2011-10-03,+60.0bp vs previous value

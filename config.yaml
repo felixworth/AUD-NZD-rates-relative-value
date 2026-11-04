@@ -17,6 +17,9 @@ paths:
   instruments_file: data/processed/instruments.csv          # all instruments, bp, long format
   instrument_summary_file: data/processed/instrument_summary.csv
   scanner_history_file: data/processed/scanner_history.csv  # z-scores for every date (used by the backtest)
+  pca_flies_file: data/processed/pca_flies.csv               # PCA butterflies + frozen-weight z-scores
+  pca_weights_file: outputs/pca_weights.csv
+  pca_oos_file: outputs/pca_oos.csv
   outputs_dir: outputs                                       # scanner_<data date>.csv, scanner_latest.csv
   charts_dir: outputs/charts
   diagnostics_dir: outputs/diagnostics
@@ -59,6 +62,13 @@ rbnz:
     nz_swap_2y:  {id: INM.DS02.NZZC,   group_contains: "swap rates",      name_is: "2 year"}
     nz_swap_5y:  {id: INM.DS05.NZZC,   group_contains: "swap rates",      name_is: "5 year"}
     nz_swap_10y: {id: INM.DS10.NZZC,   group_contains: "swap rates",      name_is: "10 year"}
+  # Extra swap tenors used only for the NZ PCA fit (not as RV instruments).
+  pca_series:
+    nz_swap_1y:  {id: INM.DS01.NZZC, group_contains: "swap rates", name_is: "1 year"}
+    nz_swap_3y:  {id: INM.DS03.NZZC, group_contains: "swap rates", name_is: "3 year"}
+    nz_swap_4y:  {id: INM.DS04.NZZC, group_contains: "swap rates", name_is: "4 year"}
+    nz_swap_7y:  {id: INM.DS07.NZZC, group_contains: "swap rates", name_is: "7 year"}
+    nz_swap_15y: {id: INM.DS15.NZZC, group_contains: "swap rates", name_is: "15 year"}
 
 # ---------------------------------------------------------------------------
 # Update rules for rates.csv
@@ -126,6 +136,32 @@ scanner:
   signal_z: 2.0             # "strong" signal: z_60 and z_250 same sign and both beyond +/-2
   percentile_min_obs: 250   # percentile vs history needs at least this many real values
   top_n: 5                  # instruments described in plain English on each run
+
+# ---------------------------------------------------------------------------
+# PCA butterflies (Step 3)
+# ---------------------------------------------------------------------------
+pca:
+  window: 250               # trailing trading days of yield CHANGES in the fit
+  min_real_fraction: 0.8    # window needs this share of valid changes
+  max_gap_days: 10          # skip the fit if the change window has a longer gap
+  n_components: 3
+  # 50/50 comparison fly: 1 of 5y vs 0.5 of 2y and 0.5 of 10y (same 5y weight as the PCA fly)
+  simple_wings: 0.5
+  curves:
+    nz:
+      fly_name: nz_swap_pca_fly
+      group: "NZ swap curve"
+      tenors: [nz_swap_1y, nz_swap_2y, nz_swap_3y, nz_swap_4y, nz_swap_5y, nz_swap_7y, nz_swap_10y, nz_swap_15y]
+      belly: nz_swap_5y
+      wings: [nz_swap_2y, nz_swap_10y]   # 2y and 10y legs of the fly
+      start: null                        # from the first date all fly legs exist
+    au:
+      fly_name: au_gov_pca_fly
+      group: "AU bond curve"
+      tenors: [au_gov_2y, au_gov_3y, au_gov_5y, au_gov_10y]
+      belly: au_gov_5y
+      wings: [au_gov_2y, au_gov_10y]
+      start: "2013-09-02"
 
 # ---------------------------------------------------------------------------
 # Benchmark-roll detection

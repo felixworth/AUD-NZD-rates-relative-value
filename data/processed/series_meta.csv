@@ -9,3 +9,8 @@ nz_gov_10y,INM.DG110.NZZCF,Secondary market government bond closing yields - 10 
 nz_swap_2y,INM.DS02.NZZC,Swap rates close - 2 year,%pa,RBNZ,B2,2011-01-05,2026-11-02,3969,percent per annum
 nz_swap_5y,INM.DS05.NZZC,Swap rates close - 5 year,%pa,RBNZ,B2,2011-01-05,2026-11-02,3969,percent per annum
 nz_swap_10y,INM.DS10.NZZC,Swap rates close - 10 year,%pa,RBNZ,B2,2011-01-05,2026-11-02,3969,percent per annum
+nz_swap_1y,INM.DS01.NZZC,Swap rates close - 1 year,%pa,RBNZ,B2,2011-01-05,2026-11-02,3969,percent per annum
+nz_swap_3y,INM.DS03.NZZC,Swap rates close - 3 year,%pa,RBNZ,B2,2011-01-05,2026-11-02,3969,percent per annum
+nz_swap_4y,INM.DS04.NZZC,Swap rates close - 4 year,%pa,RBNZ,B2,2011-01-05,2026-11-02,3969,percent per annum
+nz_swap_7y,INM.DS07.NZZC,Swap rates close - 7 year,%pa,RBNZ,B2,2011-01-05,2026-11-02,3969,percent per annum
+nz_swap_15y,INM.DS15.NZZC,Swap rates close - 15 year,%pa,RBNZ,B2,2011-01-05,2026-11-02,3969,percent per annum
