@@ -1,0 +1,23 @@
+# Python environment and caches
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Raw downloads are re-created on every run, so they are not committed.
+# (data/manual/ IS committed: pushing a new RBNZ file there triggers the workflow.)
+data/raw/
+
+# Secrets and local credentials - never commit these
+.env
+.env.*
+*.key
+*.pem
+.streamlit/secrets.toml
+
+# Editor / OS clutter
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+~$*

@@ -1,0 +1,106 @@
+# =============================================================================
+# config.yaml - every parameter of the project lives here.
+# Units are stated next to each setting. Rates in data/processed/rates.csv are
+# stored in PERCENT exactly as published; conversion to basis points (x100)
+# happens only inside src/spreads.py.
+# =============================================================================
+
+paths:
+  raw_dir: data/raw                      # automatic downloads (not committed)
+  manual_dir: data/manual                # files you download by hand (committed)
+  rates_file: data/processed/rates.csv   # merged raw yields, percent
+  series_meta_file: data/processed/series_meta.csv
+  source_status_file: data/processed/source_status.json
+  validation_file: data/processed/validation_report.csv
+  roll_dates_file: data/processed/roll_dates.csv   # reviewed list (edit status/include here)
+  rates_adjusted_file: data/processed/rates_adjusted.csv  # back-adjusted nz_gov_*_adj, percent
+  charts_dir: outputs/charts
+  diagnostics_dir: outputs/diagnostics
+
+# Polite HTTP settings for the RBA (the only automated download).
+http:
+  user_agent: "rates-rv-research/0.1 (student research project; daily download of RBA table F2)"
+  timeout_seconds: 60
+  max_retries: 3
+  backoff_seconds: 5          # waits 5s, 10s, 20s between retries
+
+# ---------------------------------------------------------------------------
+# Reserve Bank of Australia - table F2 (published weekly, Fridays)
+# ---------------------------------------------------------------------------
+rba:
+  current_url: https://www.rba.gov.au/statistics/tables/csv/f2-data.csv
+  history_url: https://www.rba.gov.au/statistics/tables/xls-hist/f02dhist.xls
+  history_end: "2013-05-17"   # last date in the history file
+  # Used only if the download fails: drop an F2 file into data/manual/.
+  manual_patterns: ["*f2*.csv", "*f02*.xls*"]
+  # clean name -> RBA series ID. "must_contain" is checked against the RBA
+  # "Title" row so we never accidentally pick the inflation-indexed bond.
+  series:
+    au_gov_2y:  {id: FCMYGBAG2D,  must_contain: "2 year bond"}
+    au_gov_3y:  {id: FCMYGBAG3D,  must_contain: "3 year bond"}
+    au_gov_5y:  {id: FCMYGBAG5D,  must_contain: "5 year bond"}
+    au_gov_10y: {id: FCMYGBAG10D, must_contain: "10 year bond"}
+
+# ---------------------------------------------------------------------------
+# Reserve Bank of New Zealand - table B2 (supplied manually, see README)
+# ---------------------------------------------------------------------------
+rbnz:
+  manual_patterns: ["*b2*.xlsx", "*b2*.csv"]
+  # clean name -> RBNZ series ID, plus the text the RBNZ "Group" and
+  # "Series" rows must contain (guards against picking a similar column).
+  series:
+    nz_gov_2y:   {id: INM.DG102.NZZCF, group_contains: "government bond", name_is: "2 year"}
+    nz_gov_5y:   {id: INM.DG105.NZZCF, group_contains: "government bond", name_is: "5 year"}
+    nz_gov_10y:  {id: INM.DG110.NZZCF, group_contains: "government bond", name_is: "10 year"}
+    nz_swap_2y:  {id: INM.DS02.NZZC,   group_contains: "swap rates",      name_is: "2 year"}
+    nz_swap_5y:  {id: INM.DS05.NZZC,   group_contains: "swap rates",      name_is: "5 year"}
+    nz_swap_10y: {id: INM.DS10.NZZC,   group_contains: "swap rates",      name_is: "10 year"}
+
+# ---------------------------------------------------------------------------
+# Update rules for rates.csv
+# ---------------------------------------------------------------------------
+update:
+  overwrite_window_days: 30   # calendar days; older values are never changed
+  ffill_max_days: 2           # interior gaps only, counted in data rows (~business days)
+
+# ---------------------------------------------------------------------------
+# Validation (run on every update)
+# ---------------------------------------------------------------------------
+validation:
+  plausible_range_pct: [-2.0, 25.0]  # values outside this are treated as parse errors
+  max_daily_move_bp: 25              # flag moves larger than this
+  stale_obs: 5                       # flag a value unchanged for this many observations
+  max_gap_weekdays: 2                # flag runs of missing weekdays longer than this
+  recent_days: 30                    # issues within this window are logged as warnings;
+                                     # older ones go to the report file only
+  max_age_days: {au: 10, nz: 7}      # warn if a market's latest data is older than this (calendar days)
+
+# ---------------------------------------------------------------------------
+# Instruments (Step 1) - decisions taken after the Step 0 data review
+# ---------------------------------------------------------------------------
+instruments:
+  au_start: "2013-09-02"   # current RBA F2 file only: one consistent method, no 2013 join
+  nz_gov_levels: raw       # raw | adjusted: NZ bond yields used in swap spreads and AU-NZ spreads.
+                           # Roll-day changes (confirmed/unclear/pending) are excluded either way.
+  # Back-adjusted NZ bond yields (nz_gov_*_adj in rates_adjusted.csv) are DIAGNOSTIC ONLY:
+  # they feed the roll chart and checks, and no instrument, scanner signal, backtest or
+  # PnL uses them.
+  post_roll_block_days: 20 # bond-based instruments (NZ swap spreads, AU-NZ bond spreads): no new
+                           # trades for this many trading days after a roll date (confirmed or
+                           # unclear) in any NZ bond they use, while z-score windows still
+                           # contain the jump. Pending rolls block new trades until reviewed.
+
+# ---------------------------------------------------------------------------
+# Benchmark-roll detection
+# ---------------------------------------------------------------------------
+rolls:
+  spread_jump_bp: 5          # |change in (bond - reference)| above this ...
+  reference_move_bp: 2       # ... while |change in reference| below this => candidate roll
+  gap_resume_weekdays: 5     # a series restarting after a gap this long is also a candidate
+  persistence_obs: 5         # review aid: compare avg spread over 5 obs after vs 5 before
+  new_candidate_jump_bp: 8   # NEW dates: also flag any jump vs swap above this, however much the swap moved
+  reviewed_through: "2026-11-02"  # dates up to here were reviewed by hand; only later dates are auto-flagged
+  # Only NZ bonds are roll-checked (AU F2 yields are interpolated; see README).
+  # NZ bonds are compared with the swap of the same tenor. Documented RBNZ benchmark
+  # changes are recorded in the documented_change column of roll_dates.csv.
+  nz_reference: {nz_gov_2y: nz_swap_2y, nz_gov_5y: nz_swap_5y, nz_gov_10y: nz_swap_10y}

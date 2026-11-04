@@ -1,0 +1,33 @@
+date,series,include,status,artificial_jump_bp,persistent_shift_bp,documented_change,note
+2012-05-03,nz_gov_10y,N,unclear,17.0,14.4,,"jump +17bp but swap fell 8bp the same day - may be a market move; roll-day change excluded, history not adjusted; reviewed 2026-11-03"
+2013-12-17,nz_gov_10y,N,unclear,-11.0,-11.8,,"5y and 10y jumped the same day - could be a roll or a bond-specific move; roll-day change excluded, history not adjusted; reviewed 2026-11-03"
+2015-04-20,nz_gov_10y,Y,confirmed,13.0,13.6,,large persistent jump vs swap; reviewed 2026-11-03
+2018-06-08,nz_gov_10y,Y,confirmed,16.0,15.0,,large persistent jump vs swap; reviewed 2026-11-03
+2020-05-15,nz_gov_10y,Y,confirmed,15.0,17.2,,large persistent jump vs swap; reviewed 2026-11-03
+2022-11-02,nz_gov_10y,Y,confirmed,14.0,14.2,2022-10-28,documented RBNZ benchmark change; reviewed 2026-11-03
+2023-11-03,nz_gov_10y,Y,confirmed,6.0,3.0,2023-11-03,documented RBNZ benchmark change; little visible jump (new bond yield close to old); reviewed 2026-11-03
+2024-11-04,nz_gov_10y,Y,confirmed,10.0,9.6,,large persistent jump vs swap; reviewed 2026-11-03
+2025-11-14,nz_gov_10y,Y,confirmed,11.0,7.8,2025-11-17,documented RBNZ benchmark change; reviewed 2026-11-03
+2026-10-30,nz_gov_10y,Y,confirmed,9.0,7.8,,"same day as the 2y roll but smaller (+9bp) - unconfirmed; roll-day change excluded, history not adjusted; reviewed 2026-11-03 | confirmed by reviewer 2026-11-04"
+2012-02-21,nz_gov_2y,Y,confirmed,43.0,36.6,,large persistent jump vs swap; reviewed 2026-11-03
+2012-04-27,nz_gov_2y,N,unclear,-10.0,-10.0,,"moderate persistent jump, no documentation; roll-day change excluded, history not adjusted; reviewed 2026-11-03"
+2014-12-15,nz_gov_2y,Y,confirmed,24.0,21.4,,restart after 302-weekday gap (different bond either side); reviewed 2026-11-03
+2017-07-28,nz_gov_2y,Y,confirmed,18.0,15.6,,large persistent jump vs swap; reviewed 2026-11-03
+2018-10-31,nz_gov_2y,Y,confirmed,7.0,8.2,,restart after 22-weekday gap (different bond either side); reviewed 2026-11-03
+2020-11-20,nz_gov_2y,Y,confirmed,12.0,13.4,,restart after 265-weekday gap (different bond either side); reviewed 2026-11-03
+2021-10-29,nz_gov_2y,Y,confirmed,30.0,25.2,,restart after 11-weekday gap (different bond either side); reviewed 2026-11-03
+2022-11-02,nz_gov_2y,Y,confirmed,11.0,10.4,2022-10-28,documented RBNZ benchmark change; reviewed 2026-11-03
+2023-11-03,nz_gov_2y,Y,confirmed,-31.0,-26.8,2023-11-03,documented RBNZ benchmark change; reviewed 2026-11-03
+2025-10-31,nz_gov_2y,Y,confirmed,27.0,27.8,2025-11-03,documented RBNZ benchmark change; reviewed 2026-11-03
+2026-10-30,nz_gov_2y,Y,confirmed,25.0,24.1,,large persistent jump vs swap; reviewed 2026-11-03
+2011-10-03,nz_gov_5y,Y,confirmed,60.0,63.4,,large persistent jump vs swap; reviewed 2026-11-03
+2013-08-01,nz_gov_5y,Y,confirmed,23.0,25.0,,large persistent jump vs swap; reviewed 2026-11-03
+2013-12-17,nz_gov_5y,N,unclear,-13.0,-16.6,,"5y and 10y jumped the same day - could be a roll or a bond-specific move; roll-day change excluded, history not adjusted; reviewed 2026-11-03"
+2015-11-06,nz_gov_5y,N,unclear,12.0,17.6,,"jump with swap -4bp, no documentation; roll-day change excluded, history not adjusted; reviewed 2026-11-03"
+2017-05-25,nz_gov_5y,Y,confirmed,29.0,26.8,,large persistent jump vs swap; reviewed 2026-11-03
+2019-04-16,nz_gov_5y,N,unclear,9.0,8.0,,"small persistent jump, no documentation; roll-day change excluded, history not adjusted; reviewed 2026-11-03"
+2021-02-10,nz_gov_5y,Y,confirmed,20.0,16.6,,first day of May-2026 bond in B2 (different bond either side); reviewed 2026-11-03
+2022-11-02,nz_gov_5y,Y,confirmed,12.0,10.4,2022-10-28,documented RBNZ benchmark change; reviewed 2026-11-03
+2023-11-03,nz_gov_5y,Y,confirmed,3.0,3.0,2023-11-03,documented RBNZ benchmark change; little visible jump (new bond yield close to old); reviewed 2026-11-03
+2024-11-04,nz_gov_5y,Y,confirmed,15.0,10.6,,large persistent jump vs swap; reviewed 2026-11-03
+2025-11-14,nz_gov_5y,Y,confirmed,21.0,18.4,2025-11-17,documented RBNZ benchmark change; reviewed 2026-11-03

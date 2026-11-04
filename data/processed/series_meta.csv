@@ -1,0 +1,11 @@
+clean_name,series_id,original_name,units,source,table,first_date,last_date,n_obs,stored_units
+au_gov_2y,FCMYGBAG2D,Australian Government 2 year bond,Per cent per annum,RBA,F2,1995-01-03,2026-10-28,7946,percent per annum
+au_gov_3y,FCMYGBAG3D,Australian Government 3 year bond,Per cent per annum,RBA,F2,1995-01-03,2026-10-28,7946,percent per annum
+au_gov_5y,FCMYGBAG5D,Australian Government 5 year bond,Per cent per annum,RBA,F2,1995-01-03,2026-10-28,7946,percent per annum
+au_gov_10y,FCMYGBAG10D,Australian Government 10 year bond,Per cent per annum,RBA,F2,1995-01-03,2026-10-28,8024,percent per annum
+nz_gov_2y,INM.DG102.NZZCF,Secondary market government bond closing yields - 2 year,%pa,RBNZ,B2,2009-01-29,2026-11-02,3879,percent per annum
+nz_gov_5y,INM.DG105.NZZCF,Secondary market government bond closing yields - 5 year,%pa,RBNZ,B2,2009-01-29,2026-11-02,4456,percent per annum
+nz_gov_10y,INM.DG110.NZZCF,Secondary market government bond closing yields - 10 year,%pa,RBNZ,B2,2009-01-29,2026-11-02,4456,percent per annum
+nz_swap_2y,INM.DS02.NZZC,Swap rates close - 2 year,%pa,RBNZ,B2,2011-01-05,2026-11-02,3969,percent per annum
+nz_swap_5y,INM.DS05.NZZC,Swap rates close - 5 year,%pa,RBNZ,B2,2011-01-05,2026-11-02,3969,percent per annum
+nz_swap_10y,INM.DS10.NZZC,Swap rates close - 10 year,%pa,RBNZ,B2,2011-01-05,2026-11-02,3969,percent per annum
