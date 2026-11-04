@@ -50,13 +50,13 @@ carry of a long residual is usually positive). Pooled 36 trades: mean
 costs, so the stretch is doing work — but *n* = 36 is small and OOS is not
 pristine.
 
-![AU-NZ 10y vs policy-hedged box](outputs/charts/readme/box_vs_raw.png)
+![AU-NZ 10y vs policy-hedged box](./outputs/charts/readme/box_vs_raw.png)
 
-![Half-life raw vs residual](outputs/charts/readme/halflife.png)
+![Half-life raw vs residual](./outputs/charts/readme/halflife.png)
 
-![Equity Step 4 vs residual+carry](outputs/charts/readme/equity.png)
+![Equity Step 4 vs residual+carry](./outputs/charts/readme/equity.png)
 
-![PCA vs 50/50 fly correlation](outputs/charts/readme/pca_correlation.png)
+![PCA vs 50/50 fly correlation](./outputs/charts/readme/pca_correlation.png)
 
 PCA flies are close to PC1/PC2-neutral out of sample (NZ daily-change corr with
 PC1 **−0.00** vs **+0.25** for a 50/50 fly; AU **−0.04** vs **+0.16**). Latest
@@ -185,12 +185,35 @@ Individual steps remain available as `python -m src.fetch`, `src.rolls`,
 `src.spreads`, `src.pca`, `src.scanner`, `src.residual`, `src.backtest`,
 `src.robustness`.
 
-### Data sources and attribution
+The **code** in this repository is MIT-licensed (see `LICENSE`). The yield
+data remain copyright of the central banks (and, for some NZ series, of the
+third parties named on the source table). See below.
 
-* Reserve Bank of Australia, Statistical Table F2 — Capital Market Yields –
-  Government Bonds – Daily.
-* Reserve Bank of New Zealand, Statistical Table B2 — Wholesale interest
-  rates (sources: RBNZ, Reuters, NZFMA). RBNZ statistics may be copied,
-  distributed and adapted subject to the conditions on the RBNZ copyright page.
+---
 
-No Bloomberg (or other vendor) data is used anywhere in this project.
+## Data sources and attribution
+
+No Bloomberg (or other vendor terminal) data is used anywhere in this project.
+
+**Reserve Bank of Australia**, Statistical Table F2 — Capital Market Yields –
+Government Bonds – Daily (series FCMYGBAG2D / 3D / 5D / 10D). Downloaded at
+run time into `data/raw/` (gitignored); the merged yields live in
+`data/processed/rates.csv`. RBA material is © Reserve Bank of Australia.
+F2 is RBA financial data: reproduce only with attribution
+(`Source: Reserve Bank of Australia`), without implying RBA endorsement, and
+subject to the [RBA copyright notice](https://www.rba.gov.au/copyright/).
+
+**Reserve Bank of New Zealand**, Statistical Table B2 — Wholesale interest
+rates. The official workbooks currently in the repo are
+`data/manual/hb2-daily-close.xlsx` (current) and
+`data/manual/hb2-daily-close-1985-2017.xlsx` (history). RBNZ material is
+© Reserve Bank of New Zealand and may be reproduced if the Bank is
+acknowledged as source and copyright owner, the material is reproduced
+accurately, and it is not used in a misleading way
+([RBNZ terms of use](https://www.rbnz.govt.nz/copyright)). That permission
+**does not extend to third-party material**. B2 itself names RBNZ, Reuters
+and NZFMA as sources — swap rates in particular may be third-party
+copyright. Check those terms before redistributing the workbooks.
+
+This project is independent research. It is not affiliated with, or endorsed
+by, the RBA, the RBNZ, Reuters or NZFMA.
