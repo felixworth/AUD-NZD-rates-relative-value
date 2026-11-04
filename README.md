@@ -17,7 +17,7 @@ an RV trader bets on the **relationship between two or more rates** — for exam
 Positions are built so that a parallel move of the whole curve makes roughly zero
 profit or loss; the trade only makes money if the relationship returns to normal.
 
-PCA butterflies (`src/pca.py`) re-weight the 2s5s10s fly so it is (approximately) neutral to parallel shifts and slope changes of the curve; see Step 3. *(Backtest and PnL: coming.)*
+PCA butterflies (`src/pca.py`) re-weight the 2s5s10s fly so it is (approximately) neutral to parallel shifts and slope changes of the curve; see Step 3. The backtest (`src/backtest.py`) fades stretched z-scores with next-day execution; see Step 4. *(Paper PnL book: coming.)*
 
 ---
 
@@ -233,6 +233,70 @@ Run `python -m src.pca` before `python -m src.scanner` so the scanner picks up t
 
 ---
 
+## Step 4 — Backtest (`src/backtest.py`)
+
+A walk-forward test of fading the scanner: **short** when `z_250 > +2`, **long** when
+`z_250 < −2`, exit when `|z_250| < 0.5`, stop if `|z_250| > 3.5`, flatten after 60
+trading days. The signal is taken at close *t* and the trade is done at close *t+1*.
+One position per instrument. These rules live in `config.yaml → backtest` and are
+**not tuned on the out-of-sample window**.
+
+No new trade if the signal day is forward-filled, has insufficient 250-day history,
+is in a post-roll block, or has a pending NZ-bond roll. Confirmed / unclear / pending
+roll-day changes are excluded from PnL and any open bond-based trade is flattened at
+the previous close (we do not hold a benchmark through its switch).
+
+**In-sample** 2 Sep 2013 – 31 Dec 2020; **out-of-sample** 1 Jan 2021 – latest.
+Daily PnL, Sharpe and drawdown are split by calendar date; trade counts and hit rate
+are split by entry date.
+
+### DV01 and costs (assumptions)
+
+Each instrument is a yield combination with weights `w_i`. Notionals are chosen so
+the dollar DV01 of leg *i* equals `k × w_i`, and the **long side sums to $10,000 DV01**.
+When the weights sum to zero (every non-PCA instrument; PCA flies nearly so) the book
+is net-DV01-neutral: a 1bp parallel shift of every leg is worth about $0, and a 1bp
+move in the combination is worth `$k`. Par modified duration at **4%**
+(`(1 − 1.04^(-n)) / 0.04`) is used for every tenor *n* read from the series name.
+That is a stated assumption, not a live-market quote: no coupon frequency, no
+convexity, no AU vs NZ duration difference beyond tenor.
+
+PnL is reported in **bp of the yield combination** and in **$ per $10k long-side DV01**.
+One-way costs are 0.5bp per NZ swap leg and 1bp per government-bond leg, charged at
+entry and again at exit.
+
+PCA flies are signalled from the scanner z-score (which restates weights each day)
+but **marked with the weights frozen at the signal date**, which is the fly that was
+actually put on.
+
+### Diagnostics
+
+* `outputs/backtest_trades.csv`, `backtest_daily.csv`, `backtest_metrics.csv`
+* `outputs/backtest_sensitivity.csv` — entry 1.5 / 2.0 / 2.5 × exit 0 / 0.5 (a report;
+  the default 2.0 / 0.5 is not chosen from this table)
+* `outputs/backtest_yearly.csv`, `backtest_worst_trades.csv`
+* `outputs/backtest_events.csv` — RBA and RBNZ decision dates (official), AU CPI
+  (last Wednesday of the month, with documented exceptions), NZ CPI (16 weekdays
+  after quarter-end, an approximation of Stats NZ’s “about 12 working days”)
+* Charts in `outputs/charts/backtest/`: equity curves, z-score with trade markers,
+  PnL by year
+
+A trade is tagged “open across an event” if an RBA/RBNZ decision or CPI print for
+that market falls strictly after entry and on or before exit.
+
+![Backtest equity](outputs/charts/backtest/equity.png)
+
+On the committed rules the book **loses money**, more so out of sample than in sample
+(OOS hit rate 27%, Sharpe −1.0). NZ and AU curve/fly trades fade a 250-day z-score
+through the 2021–23 hiking cycle and the 2024–26 easing cycle, both of which ran as
+one-way flatten-then-steepener trends; simple 2s5s10s flies stop out on half or more
+of OOS trades. AU–NZ 5y is the least-bad (OOS hit rate 58%) but Sharpe is still only
+0.14. Every cell of the sensitivity table is also OOS-negative, so this is not an
+artefact of the particular 2.0 / 0.5 thresholds. Step 5 (paper PnL) should not treat
+this scanner as a licence to trade size.
+
+---
+
 ## How to run
 
 ```powershell
@@ -245,6 +309,7 @@ python -m src.rolls      # flag new roll candidates, back-adjust, chart
 python -m src.spreads    # build the RV instruments (bp)
 python -m src.pca        # PCA-weighted 2s5s10s flies and diagnostics
 python -m src.scanner    # z-scores, percentiles and today's ranked table
+python -m src.backtest   # fade z-scores, IS/OOS metrics and charts
 python -m src.diagnostics   # one-off check of the 2013 RBA file join
 pytest                   # run the tests
 ```
@@ -257,4 +322,4 @@ pytest                   # run the tests
 * Reserve Bank of New Zealand, Statistical Table B2 — Wholesale interest rates (sources: RBNZ, Reuters, NZFMA).
   RBNZ statistics may be copied, distributed and adapted subject to the conditions on the RBNZ copyright page.
 
-*(Backtest results, limitations and deployment instructions: coming.)*
+*(Paper PnL book, limitations and deployment instructions: coming.)*

@@ -20,6 +20,13 @@ paths:
   pca_flies_file: data/processed/pca_flies.csv               # PCA butterflies + frozen-weight z-scores
   pca_weights_file: outputs/pca_weights.csv
   pca_oos_file: outputs/pca_oos.csv
+  backtest_trades_file: outputs/backtest_trades.csv
+  backtest_daily_file: outputs/backtest_daily.csv
+  backtest_metrics_file: outputs/backtest_metrics.csv
+  backtest_sensitivity_file: outputs/backtest_sensitivity.csv
+  backtest_yearly_file: outputs/backtest_yearly.csv
+  backtest_worst_file: outputs/backtest_worst_trades.csv
+  backtest_events_file: outputs/backtest_events.csv
   outputs_dir: outputs                                       # scanner_<data date>.csv, scanner_latest.csv
   charts_dir: outputs/charts
   diagnostics_dir: outputs/diagnostics
@@ -162,6 +169,32 @@ pca:
       belly: au_gov_5y
       wings: [au_gov_2y, au_gov_10y]
       start: "2013-09-02"
+
+# ---------------------------------------------------------------------------
+# Backtest (Step 4)
+# ---------------------------------------------------------------------------
+# Signal at close t, trade at close t+1. Fade |z_250|: short when z is high,
+# long when z is low. Parameters below are the committed rules — they are not
+# tuned on the out-of-sample window. The sensitivity table varies entry/exit
+# only as a report; it does not change these defaults.
+backtest:
+  entry_z: 2.0              # enter when |z_250| exceeds this
+  exit_z: 0.5               # exit when |z_250| has come back inside this
+  stop_z: 3.5               # stop out if |z_250| runs further beyond this
+  max_hold_days: 60         # trading days in the instrument's own calendar
+  in_sample: ["2013-09-02", "2020-12-31"]
+  out_of_sample: ["2021-01-01", null]   # null = through the latest history date
+  book_dv01_usd: 10000      # long-side DV01 of each instrument's book, US dollars
+  # Par modified duration at this yield: (1 - (1+y)^(-n)) / y. Stated so the
+  # backtest is reproducible; not a live-market quote. Tenor n is read from the
+  # series name (nz_swap_10y -> 10). Coupons assumed annual; no convexity.
+  assume_yield: 0.04
+  costs:
+    swap_bp: 0.5            # one-way yield cost per NZ swap leg
+    bond_bp: 1.0            # one-way yield cost per government-bond leg
+  sensitivity:
+    entry_z: [1.5, 2.0, 2.5]
+    exit_z: [0.0, 0.5]
 
 # ---------------------------------------------------------------------------
 # Benchmark-roll detection
