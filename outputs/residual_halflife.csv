@@ -1,0 +1,4 @@
+instrument,raw_compare,halflife_raw_days,halflife_resid_days
+au_nz_box,au_nz_gov_10y,103.31,23.41
+au_gov_10s2s_resid,au_gov_2s10s,103.06,73.01
+nz_swap_10s2s_resid,nz_swap_2s10s,234.82,74.18

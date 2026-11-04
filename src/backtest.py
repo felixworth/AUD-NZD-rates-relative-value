@@ -250,12 +250,15 @@ def _sample_of(date: pd.Timestamp, is_end: pd.Timestamp) -> str:
 def simulate(df: pd.DataFrame, spec: dict[str, Any], name: str, rules: dict[str, Any],
              costs: dict[str, float], assume_yield: float, book_dv01: float,
              pca_w: dict[str, pd.DataFrame],
-             clean: pd.DataFrame | None = None) -> tuple[pd.DataFrame, pd.DataFrame]:
+             clean: pd.DataFrame | None = None,
+             residual: dict[str, Any] | None = None,
+             require_carry: bool = False) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Walk one instrument. `df` is scanner-history rows indexed by date.
 
     Signals use scanner z_250. Marks use the instrument's value_bp, except PCA flies
-    which are remade with the weights frozen at the signal date (the position you
-    actually put on). Returns (trades, daily PnL).
+    (weights frozen at the signal date) and residuals (beta frozen at the signal date).
+    `require_carry` is only used by the residual backtest; Step 4 leaves it False.
+    Returns (trades, daily PnL).
     """
     d = df.sort_index()
     dates = list(d.index)
@@ -268,6 +271,8 @@ def simulate(df: pd.DataFrame, spec: dict[str, Any], name: str, rules: dict[str,
     insuff = _as_bool(d["insufficient_250"]).to_numpy()
     no_signal = filled | roll | post | pending_roll | insuff | ~np.isfinite(z)
     no_exec_enter = filled | roll | post | pending_roll
+    carry_arr = (residual["carry_long"].reindex(d.index).to_numpy(dtype=float)
+                 if residual is not None and "carry_long" in residual else None)
 
     scanner_px = d["value_bp"].to_numpy(dtype=float)
     mark = scanner_px.copy()
@@ -320,19 +325,34 @@ def simulate(df: pd.DataFrame, spec: dict[str, Any], name: str, rules: dict[str,
         if pending is not None and real:
             action, payload = pending
             if action == "enter" and not no_exec_enter[i]:
-                sig = payload["signal_date"] if spec["pca"] else dates[i]
-                legs = legs_on_date(spec, sig, pca_w, name)
-                if spec["pca"] and clean is not None:
-                    frozen = frozen_pca_level(clean, spec, payload["signal_date"], pca_w, name)
-                    if frozen is not None:
-                        mark = frozen.reindex(d.index).to_numpy(dtype=float)
+                legs, k_override = None, None
+                if residual is not None:
+                    sig = payload["signal_date"]
+                    beta_s = residual["beta"]
+                    if sig in beta_s.index and np.isfinite(beta_s.at[sig]):
+                        beta_t = float(beta_s.at[sig])
+                        frozen = (residual["long_bp"] - beta_t * residual["short_bp"]).reindex(d.index)
+                        mark = frozen.to_numpy(dtype=float)
                         px = mark[i]
+                        legs = dict(residual["long_legs"])
+                        for s, w in residual["short_legs"].items():
+                            legs[s] = legs.get(s, 0.0) - beta_t * w
+                        long_w = sum(w for w in residual["long_legs"].values() if w > 0)
+                        k_override = book_dv01 / long_w if long_w > 0 else float("nan")
+                else:
+                    sig = payload["signal_date"] if spec.get("pca") else dates[i]
+                    legs = legs_on_date(spec, sig, pca_w, name)
+                    if spec.get("pca") and clean is not None:
+                        frozen = frozen_pca_level(clean, spec, payload["signal_date"], pca_w, name)
+                        if frozen is not None:
+                            mark = frozen.reindex(d.index).to_numpy(dtype=float)
+                            px = mark[i]
                 if legs and np.isfinite(px) and all(np.isfinite(list(legs.values()))):
                     pos = payload["side"]
                     entry_px = last_px = px
                     entry_z = payload["z"]
                     entry_date = dates[i]
-                    k = book_scale(legs, book_dv01)
+                    k = k_override if k_override is not None else book_scale(legs, book_dv01)
                     cost = one_way_cost_bp(legs, costs)
                     hold = 0
                 pending = None
@@ -345,7 +365,13 @@ def simulate(df: pd.DataFrame, spec: dict[str, Any], name: str, rules: dict[str,
                 mark = scanner_px.copy()
 
         if pos == 0 and pending is None and not no_signal[i] and abs(z[i]) > rules["entry_z"]:
-            pending = ("enter", {"side": -int(np.sign(z[i])), "z": float(z[i]), "signal_date": dates[i]})
+            side = -int(np.sign(z[i]))
+            ok_carry = True
+            if require_carry:
+                cr = carry_arr[i] if carry_arr is not None else np.nan
+                ok_carry = bool(np.isfinite(cr) and side * cr >= 0)
+            if ok_carry:
+                pending = ("enter", {"side": side, "z": float(z[i]), "signal_date": dates[i]})
         elif pos != 0 and pending is None:
             if np.isfinite(z[i]) and abs(z[i]) > rules["stop_z"]:
                 pending = ("exit", "stop")

@@ -17,7 +17,7 @@ an RV trader bets on the **relationship between two or more rates** — for exam
 Positions are built so that a parallel move of the whole curve makes roughly zero
 profit or loss; the trade only makes money if the relationship returns to normal.
 
-PCA butterflies (`src/pca.py`) re-weight the 2s5s10s fly so it is (approximately) neutral to parallel shifts and slope changes of the curve; see Step 3. The backtest (`src/backtest.py`) fades stretched z-scores with next-day execution; see Step 4. *(Paper PnL book: coming.)*
+PCA butterflies (`src/pca.py`) re-weight the 2s5s10s fly so it is (approximately) neutral to parallel shifts and slope changes of the curve; see Step 3. The backtest (`src/backtest.py`) fades stretched z-scores with next-day execution; see Step 4. Hypothesis 3 (`src/residual.py`) hedges the 2y/policy factor out of the 10y spread and fades the residual; see Step 4c. *(Paper PnL book: coming.)*
 
 ---
 
@@ -297,6 +297,111 @@ this scanner as a licence to trade size.
 
 ---
 
+## Step 4c — Hypothesis 3: policy-hedged residual RV (`src/residual.py`)
+
+Step 4 lost money fading raw 2s10s and AU–NZ 10y z-scores because those spreads
+**trend with the policy cycle**: hiking cycles flatten the curve for years,
+easing cycles steepen it. A standard desk next try (not a data-mined one) is to
+hedge the 2-year / policy factor out of the 10-year spread and fade only what is
+left.
+
+The residual on date *t* is
+
+`y_long,t − β_t × y_short,t`
+
+where `β_t` is the slope from a 250-trading-day regression of **daily changes**
+of the long leg on the short leg, fitted only on data dated *t* or earlier.
+Filled days and NZ-bond roll days are left out of the fit. At date *t* the
+residual's last 60 and 250 days are **rebuilt with that day's β** (not stitched
+from yesterday's β) and then z-scored — the same idea as the PCA fly.
+
+Three residuals, all in bp:
+
+| Name | Residual |
+|---|---|
+| `au_nz_box` | (AU10 − NZ10) − β × (AU2 − NZ2) |
+| `au_gov_10s2s_resid` | AU10 − β × AU2 |
+| `nz_swap_10s2s_resid` | NZ10 swap − β × NZ2 swap |
+
+**Carry + rolldown (stated assumptions, not live-market quotes).** For each leg,
+approximate 3-month carry and rolldown in bp from the current curve: roll down
+the curve by linearly interpolating yield vs tenor among the available points
+(AU 2/3/5/10; NZ swaps 1/2/3/4/5/7/10/15; NZ govt 2/5/10); below the shortest
+or above the longest tenor the yield is held at the end-point. Funding is the
+shortest available rate on that market (`au_gov_2y`, `nz_swap_1y` falling back
+to `nz_swap_2y`, `nz_gov_2y`). Carry in bp of yield over horizon *h* = 0.25y is
+`(y − funding) × h × 100 / modified_duration`, with par modified duration at the
+**current** yield. No convexity. The residual's carry is the long-leg combo's
+carry+roll minus β times the short-leg combo's.
+
+**Rule.** Same as Step 4 (fade `|z_250| > 2`, exit `< 0.5`, stop `> 3.5`, max
+hold 60 trading days, signal at *t* / trade at *t+1*, same costs, same
+roll/filled/post-roll blocks) **plus** a carry filter fixed in advance: enter
+only when the 3-month carry+rolldown of the *trade direction* is ≥ 0. The 10y
+combo is sized at $10k DV01; the hedge is `β ×` that DV01 (the box is then
+net-DV01-neutral; the curve residuals are not). Marks use β frozen at the
+signal date. The same backtest is also run **without** the carry filter so the
+filter's effect is visible.
+
+Parameters live in `config.yaml → residual` and were **not tuned** on 2021–.
+This hypothesis was chosen from desk practice **after seeing Step 4**, so the
+out-of-sample window is **not a pristine hold-out**. Step 4's own metrics and
+charts are left untouched; this step only reads `outputs/backtest_metrics.csv`.
+
+### Diagnostics
+
+* `data/processed/residual_history.csv` — residual level, frozen-β z-scores, 3m carry
+* `outputs/residual_beta.csv`, `residual_metrics.csv`, `residual_trades.csv`,
+  `residual_trades_nocarry.csv`, `residual_halflife.csv`
+* Charts in `outputs/charts/residual/`: raw 10y spread vs residual, rolling β,
+  equity with vs without the carry filter
+
+Half-lives are AR(1) on **levels**, in-sample only: `ln(2) / −ln(φ)`. A shorter
+residual half-life than the raw spread is the hedge doing its job.
+
+### Results
+
+Half-life of mean reversion (AR(1) on levels, **in-sample only**):
+
+| Instrument | Raw spread | Residual |
+|---|---|---|
+| AU–NZ box vs `au_nz_gov_10y` | 103d | **23d** |
+| AU 10s2s residual vs `au_gov_2s10s` | 103d | **73d** |
+| NZ swap 10s2s residual vs `nz_swap_2s10s` | 235d | **74d** |
+
+The hedge does shorten the memory of the spread — most clearly on the AU–NZ box,
+where the raw 10y spread trended with the 2022–26 policy cycle and the residual
+did not. Latest β: box 0.63, AU 10s2s 0.90, NZ 10s2s 0.86. β spiked around the
+2020–21 COVID / hiking turn (AU briefly > 2) and then settled near 0.6–0.9.
+
+Backtest, same IS (2013-09 to 2020-12) / OOS (2021-01 to latest) split as Step 4.
+PnL is $ per $10k DV01 on the 10y combo.
+
+| Rule | Sample | Trades | Hit % | Avg bp | Sharpe |
+|---|---|---|---|---|---|
+| Step 4 baseline (all instruments) | IS | 238 | 42 | −2.0 | −0.29 |
+| Step 4 baseline (all instruments) | OOS | 227 | 27 | −4.3 | −1.03 |
+| Residual **with** carry filter | IS | 22 | 55 | +2.5 | +0.25 |
+| Residual **with** carry filter | OOS | 14 | 86 | +8.7 | +0.59 |
+| Residual **without** carry filter | IS | 47 | 51 | −2.7 | −0.23 |
+| Residual **without** carry filter | OOS | 39 | 44 | −2.2 | −0.36 |
+
+The carry filter is doing most of the work: without it the residual book still
+loses, just less than Step 4. With it, trades are scarce (the box had **no**
+in-sample entries) and OOS is 14 trades, so the +0.59 Sharpe is a small sample.
+AU 10s2s typically has positive 3-month carry on a long residual (~+4bp median),
+so the filter mostly allows longs (fade a cheap residual) and blocks shorts.
+That is the intended desk rule — do not fade against carry — not a claim that
+the residual is a robust money-maker.
+
+![Raw vs residual](outputs/charts/residual/raw_vs_residual.png)
+
+![Rolling beta](outputs/charts/residual/beta.png)
+
+![Residual equity](outputs/charts/residual/equity.png)
+
+---
+
 ## How to run
 
 ```powershell
@@ -310,6 +415,7 @@ python -m src.spreads    # build the RV instruments (bp)
 python -m src.pca        # PCA-weighted 2s5s10s flies and diagnostics
 python -m src.scanner    # z-scores, percentiles and today's ranked table
 python -m src.backtest   # fade z-scores, IS/OOS metrics and charts
+python -m src.residual   # Hypothesis 3: policy-hedged residual RV
 python -m src.diagnostics   # one-off check of the 2013 RBA file join
 pytest                   # run the tests
 ```

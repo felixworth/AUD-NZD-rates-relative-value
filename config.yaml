@@ -27,6 +27,12 @@ paths:
   backtest_yearly_file: outputs/backtest_yearly.csv
   backtest_worst_file: outputs/backtest_worst_trades.csv
   backtest_events_file: outputs/backtest_events.csv
+  residual_history_file: data/processed/residual_history.csv
+  residual_beta_file: outputs/residual_beta.csv
+  residual_metrics_file: outputs/residual_metrics.csv
+  residual_trades_file: outputs/residual_trades.csv
+  residual_trades_nocarry_file: outputs/residual_trades_nocarry.csv
+  residual_halflife_file: outputs/residual_halflife.csv
   outputs_dir: outputs                                       # scanner_<data date>.csv, scanner_latest.csv
   charts_dir: outputs/charts
   diagnostics_dir: outputs/diagnostics
@@ -195,6 +201,51 @@ backtest:
   sensitivity:
     entry_z: [1.5, 2.0, 2.5]
     exit_z: [0.0, 0.5]
+
+# ---------------------------------------------------------------------------
+# Hypothesis 3: policy-hedged residual RV (Step 4c)
+# ---------------------------------------------------------------------------
+# Parameters fixed in advance; not tuned on the out-of-sample window. This
+# hypothesis was chosen from standard desk practice AFTER seeing Step 4, so the
+# 2021- OOS window is not a pristine hold-out.
+residual:
+  window: 250                 # trailing trading days of yield CHANGES for beta
+  min_real_fraction: 0.8
+  max_gap_days: 10
+  carry_horizon_years: 0.25   # 3-month carry + rolldown
+  # Funding = shortest tenor on that market's curve. Rolldown linearly interpolates
+  # yield vs tenor among available points; below the shortest / above the longest
+  # tenor the yield is held at the end-point (no off-curve extrapolation).
+  # Carry in bp of yield over horizon h: (y - funding) * h * 100 / mod_duration,
+  # with par modified duration at the current yield. No convexity.
+  funding:
+    au: au_gov_2y
+    nz_swap: nz_swap_1y
+    nz_gov: nz_gov_2y
+  curves:
+    au:      [au_gov_2y, au_gov_3y, au_gov_5y, au_gov_10y]
+    nz_swap: [nz_swap_1y, nz_swap_2y, nz_swap_3y, nz_swap_4y, nz_swap_5y, nz_swap_7y, nz_swap_10y, nz_swap_15y]
+    nz_gov:  [nz_gov_2y, nz_gov_5y, nz_gov_10y]
+  instruments:
+    au_nz_box:
+      group: "AU-NZ residual"
+      # (AU10 - NZ10) - beta * (AU2 - NZ2)
+      long:  {au_gov_10y: 1, nz_gov_10y: -1}
+      short: {au_gov_2y: 1,  nz_gov_2y: -1}
+      start: "2013-09-02"
+      raw_compare: au_nz_gov_10y
+    au_gov_10s2s_resid:
+      group: "AU bond residual"
+      long:  {au_gov_10y: 1}
+      short: {au_gov_2y: 1}
+      start: "2013-09-02"
+      raw_compare: au_gov_2s10s
+    nz_swap_10s2s_resid:
+      group: "NZ swap residual"
+      long:  {nz_swap_10y: 1}
+      short: {nz_swap_2y: 1}
+      start: null
+      raw_compare: nz_swap_2s10s
 
 # ---------------------------------------------------------------------------
 # Benchmark-roll detection
