@@ -1,0 +1,13 @@
+instrument,group,formula_bp,inputs,bond_based,start,as_of,n_obs,latest_bp,min_bp,min_date,max_bp,max_date,mean_bp,roll_days,blocked_days
+nz_swap_2s5s,NZ swap curve,100 x (nz_swap_5y - nz_swap_2y),"nz_swap_5y, nz_swap_2y",False,2011-01-05,2026-11-02,4041,30.0,-89.0,2023-05-19,129.0,2011-04-20,28.7,0,0
+nz_swap_2s10s,NZ swap curve,100 x (nz_swap_10y - nz_swap_2y),"nz_swap_10y, nz_swap_2y",False,2011-01-05,2026-11-02,4041,63.0,-105.0,2023-05-19,214.0,2011-04-20,67.9,0,0
+nz_swap_2s5s10s,NZ swap curve,100 x (2 x nz_swap_5y - nz_swap_2y - nz_swap_10y),"nz_swap_5y, nz_swap_2y, nz_swap_10y",False,2011-01-05,2026-11-02,4041,-3.0,-73.0,2023-05-19,44.0,2011-04-26,-10.6,0,0
+au_gov_2s5s,AU bond curve,100 x (au_gov_5y - au_gov_2y),"au_gov_5y, au_gov_2y",False,2013-09-02,2026-10-28,3359,-0.5,-21.0,2023-06-23,115.1,2021-10-27,25.9,0,0
+au_gov_2s10s,AU bond curve,100 x (au_gov_10y - au_gov_2y),"au_gov_10y, au_gov_2y",False,2013-09-02,2026-10-28,3359,25.7,-14.0,2023-06-23,177.7,2021-02-26,70.7,0,0
+au_gov_2s5s10s,AU bond curve,100 x (2 x au_gov_5y - au_gov_2y - au_gov_10y),"au_gov_5y, au_gov_2y, au_gov_10y",False,2013-09-02,2026-10-28,3359,-26.7,-68.1,2020-03-19,73.9,2022-03-24,-18.9,0,0
+au_nz_gov_2y,AU-NZ bond spread,100 x (au_gov_2y - nz_gov_2y),"au_gov_2y, nz_gov_2y",True,2013-09-02,2026-10-28,2778,112.1,-188.2,2023-04-05,125.1,2026-09-02,-35.5,8,168
+au_nz_gov_5y,AU-NZ bond spread,100 x (au_gov_5y - nz_gov_5y),"au_gov_5y, nz_gov_5y",True,2013-09-02,2026-10-28,3359,53.6,-135.2,2023-03-16,68.1,2026-09-02,-36.3,9,189
+au_nz_gov_10y,AU-NZ bond spread,100 x (au_gov_10y - nz_gov_10y),"au_gov_10y, nz_gov_10y",True,2013-09-02,2026-10-28,3359,27.8,-101.1,2023-03-15,46.6,2020-05-13,-31.6,8,168
+nz_swap_spread_2y,NZ swap spread,100 x (nz_swap_2y - nz_gov_2y),"nz_swap_2y, nz_gov_2y",True,2011-01-05,2026-11-02,3460,-8.0,-34.0,2025-12-02,71.0,2022-10-31,18.5,11,212
+nz_swap_spread_5y,NZ swap spread,100 x (nz_swap_5y - nz_gov_5y),"nz_swap_5y, nz_gov_5y",True,2011-01-05,2026-11-02,4041,-10.0,-45.0,2024-12-23,66.0,2011-08-09,17.1,11,231
+nz_swap_spread_10y,NZ swap spread,100 x (nz_swap_10y - nz_gov_10y),"nz_swap_10y, nz_gov_10y",True,2011-01-05,2026-11-02,4041,-39.0,-62.0,2025-04-09,63.0,2013-04-19,10.9,10,191

@@ -17,7 +17,7 @@ an RV trader bets on the **relationship between two or more rates** — for exam
 Positions are built so that a parallel move of the whole curve makes roughly zero
 profit or loss; the trade only makes money if the relationship returns to normal.
 
-*(Methodology for spreads, scanner, PCA, backtest and PnL: coming.)*
+*(Methodology for scanner, PCA, backtest and PnL: coming.)*
 
 ---
 
@@ -128,6 +128,37 @@ whole history on the new method, no break would be visible anyway.
 
 ---
 
+## Step 1 — Instruments (`src/spreads.py`)
+
+Yields are stored in percent; `spreads.py` is the **only** place they are converted to
+basis points (1% = 100bp). Each instrument is `100 × Σ weight × yield`, defined in
+`config.yaml → instruments.definitions`:
+
+| Group | Instruments | Built from | Sign convention |
+|---|---|---|---|
+| NZ swap curve | `nz_swap_2s5s`, `nz_swap_2s10s`, `nz_swap_2s5s10s` | NZ swaps (from Jan 2011) | curve = long tenor − 2y; fly = 2×5y − 2y − 10y |
+| AU bond curve | `au_gov_2s5s`, `au_gov_2s10s`, `au_gov_2s5s10s` | AU govt bonds (from 2 Sep 2013) | same |
+| AU–NZ bond spread | `au_nz_gov_2y`, `_5y`, `_10y` | AU bond − **raw** NZ bond (from 2 Sep 2013) | positive = AU yields above NZ |
+| NZ swap spread | `nz_swap_spread_2y`, `_5y`, `_10y` | NZ swap − **raw** NZ bond | positive = swap above bond |
+
+A positive butterfly means the 5y yield is high relative to the 2y and 10y ("5y cheap").
+Back-adjusted NZ bond yields are never used.
+
+* Each instrument stops at the latest date on which **all** its inputs have published data
+  (its `as_of` date): NZ-only instruments run to the latest RBNZ date, anything with an AU
+  leg to the latest RBA date.
+* `data/processed/instruments.csv` has one row per date and instrument: `value_bp`,
+  `inputs_filled` (an input was forward-filled over a holiday), `roll_day` (an NZ bond leg
+  rolled — that day's change is excluded from backtest and PnL) and `post_roll_block`
+  (no new trades: the roll day plus 20 trading days, or until a pending roll is reviewed).
+  Roll flags only apply to instruments with an NZ government bond leg.
+* `data/processed/instrument_summary.csv` lists each instrument's inputs, formula, start,
+  `as_of`, latest value and min / max / mean over its history (all in bp).
+
+![RV instruments](outputs/charts/instruments.png)
+
+---
+
 ## How to run
 
 ```powershell
@@ -137,6 +168,7 @@ pip install -r requirements.txt
 
 python -m src.fetch      # update data/processed/rates.csv
 python -m src.rolls      # flag new roll candidates, back-adjust, chart
+python -m src.spreads    # build the RV instruments (bp)
 python -m src.diagnostics   # one-off check of the 2013 RBA file join
 pytest                   # run the tests
 ```

@@ -14,6 +14,8 @@ paths:
   validation_file: data/processed/validation_report.csv
   roll_dates_file: data/processed/roll_dates.csv   # reviewed list (edit status/include here)
   rates_adjusted_file: data/processed/rates_adjusted.csv  # back-adjusted nz_gov_*_adj, percent
+  instruments_file: data/processed/instruments.csv          # all instruments, bp, long format
+  instrument_summary_file: data/processed/instrument_summary.csv
   charts_dir: outputs/charts
   diagnostics_dir: outputs/diagnostics
 
@@ -89,6 +91,27 @@ instruments:
                            # trades for this many trading days after a roll date (confirmed or
                            # unclear) in any NZ bond they use, while z-score windows still
                            # contain the jump. Pending rolls block new trades until reviewed.
+
+  # Each instrument = 100 x sum(weight x yield in %), i.e. in basis points (bp).
+  # Sign conventions:
+  #   curve 2s10s / 2s5s : long tenor minus 2y       (positive = upward-sloping curve)
+  #   butterfly 2s5s10s  : 2 x 5y - 2y - 10y          (positive = 5y yield high vs the wings)
+  #   AU-NZ bond spread  : AU bond minus RAW NZ bond  (positive = AU yields above NZ)
+  #   NZ swap spread     : NZ swap minus RAW NZ bond  (positive = swap above the bond)
+  # au_start applies to every instrument with an AU leg. "*_adj" series are never allowed.
+  definitions:
+    nz_swap_2s5s:      {group: "NZ swap curve",     legs: {nz_swap_5y: 1, nz_swap_2y: -1}}
+    nz_swap_2s10s:     {group: "NZ swap curve",     legs: {nz_swap_10y: 1, nz_swap_2y: -1}}
+    nz_swap_2s5s10s:   {group: "NZ swap curve",     legs: {nz_swap_5y: 2, nz_swap_2y: -1, nz_swap_10y: -1}}
+    au_gov_2s5s:       {group: "AU bond curve",     legs: {au_gov_5y: 1, au_gov_2y: -1}}
+    au_gov_2s10s:      {group: "AU bond curve",     legs: {au_gov_10y: 1, au_gov_2y: -1}}
+    au_gov_2s5s10s:    {group: "AU bond curve",     legs: {au_gov_5y: 2, au_gov_2y: -1, au_gov_10y: -1}}
+    au_nz_gov_2y:      {group: "AU-NZ bond spread", legs: {au_gov_2y: 1, nz_gov_2y: -1}}
+    au_nz_gov_5y:      {group: "AU-NZ bond spread", legs: {au_gov_5y: 1, nz_gov_5y: -1}}
+    au_nz_gov_10y:     {group: "AU-NZ bond spread", legs: {au_gov_10y: 1, nz_gov_10y: -1}}
+    nz_swap_spread_2y: {group: "NZ swap spread",    legs: {nz_swap_2y: 1, nz_gov_2y: -1}}
+    nz_swap_spread_5y: {group: "NZ swap spread",    legs: {nz_swap_5y: 1, nz_gov_5y: -1}}
+    nz_swap_spread_10y: {group: "NZ swap spread",   legs: {nz_swap_10y: 1, nz_gov_10y: -1}}
 
 # ---------------------------------------------------------------------------
 # Benchmark-roll detection
