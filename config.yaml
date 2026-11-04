@@ -33,6 +33,8 @@ paths:
   residual_trades_file: outputs/residual_trades.csv
   residual_trades_nocarry_file: outputs/residual_trades_nocarry.csv
   residual_halflife_file: outputs/residual_halflife.csv
+  residual_robustness_file: outputs/residual_robustness.csv
+  residual_carry_only_trades_file: outputs/residual_carry_only_trades.csv
   outputs_dir: outputs                                       # scanner_<data date>.csv, scanner_latest.csv
   charts_dir: outputs/charts
   diagnostics_dir: outputs/diagnostics

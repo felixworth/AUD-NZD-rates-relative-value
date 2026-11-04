@@ -252,12 +252,13 @@ def simulate(df: pd.DataFrame, spec: dict[str, Any], name: str, rules: dict[str,
              pca_w: dict[str, pd.DataFrame],
              clean: pd.DataFrame | None = None,
              residual: dict[str, Any] | None = None,
-             require_carry: bool = False) -> tuple[pd.DataFrame, pd.DataFrame]:
+             require_carry: bool = False,
+             carry_only: bool = False) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Walk one instrument. `df` is scanner-history rows indexed by date.
 
     Signals use scanner z_250. Marks use the instrument's value_bp, except PCA flies
     (weights frozen at the signal date) and residuals (beta frozen at the signal date).
-    `require_carry` is only used by the residual backtest; Step 4 leaves it False.
+    `require_carry` / `carry_only` are residual-report flags; Step 4 leaves both False.
     Returns (trades, daily PnL).
     """
     d = df.sort_index()
@@ -364,14 +365,21 @@ def simulate(df: pd.DataFrame, spec: dict[str, Any], name: str, rules: dict[str,
                 close_trade(i, payload, px)
                 mark = scanner_px.copy()
 
-        if pos == 0 and pending is None and not no_signal[i] and abs(z[i]) > rules["entry_z"]:
-            side = -int(np.sign(z[i]))
-            ok_carry = True
-            if require_carry:
-                cr = carry_arr[i] if carry_arr is not None else np.nan
-                ok_carry = bool(np.isfinite(cr) and side * cr >= 0)
-            if ok_carry:
-                pending = ("enter", {"side": side, "z": float(z[i]), "signal_date": dates[i]})
+        if pos == 0 and pending is None and not no_signal[i]:
+            cr = carry_arr[i] if carry_arr is not None else np.nan
+            if carry_only:
+                # Complementary region: hold the carry-positive residual while unstretched.
+                # Same exit/stop/max-hold as the fade rule (do not enter already inside |z| < exit).
+                if abs(z[i]) < rules["entry_z"] and abs(z[i]) >= rules["exit_z"] and np.isfinite(cr):
+                    pending = ("enter", {"side": 1 if cr >= 0 else -1,
+                                         "z": float(z[i]), "signal_date": dates[i]})
+            elif abs(z[i]) > rules["entry_z"]:
+                side = -int(np.sign(z[i]))
+                ok_carry = True
+                if require_carry:
+                    ok_carry = bool(np.isfinite(cr) and side * cr >= 0)
+                if ok_carry:
+                    pending = ("enter", {"side": side, "z": float(z[i]), "signal_date": dates[i]})
         elif pos != 0 and pending is None:
             if np.isfinite(z[i]) and abs(z[i]) > rules["stop_z"]:
                 pending = ("exit", "stop")

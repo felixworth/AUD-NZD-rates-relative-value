@@ -3,6 +3,9 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+*.egg-info/
+.coverage
+htmlcov/
 
 # Raw downloads are re-created on every run, so they are not committed.
 # (data/manual/ IS committed: pushing a new RBNZ file there triggers the workflow.)

@@ -358,7 +358,7 @@ def residual_bundle(hist: pd.DataFrame, spec: dict[str, Any], beta: pd.Series, c
 
 
 def backtest_residuals(hist: pd.DataFrame, specs: dict[str, dict], bundles: dict[str, dict],
-                       cfg: dict[str, Any], require_carry: bool
+                       cfg: dict[str, Any], require_carry: bool, carry_only: bool = False
                        ) -> tuple[pd.DataFrame, pd.DataFrame]:
     bt = cfg["backtest"]
     rules = dict(entry_z=bt["entry_z"], exit_z=bt["exit_z"], stop_z=bt["stop_z"],
@@ -369,7 +369,8 @@ def backtest_residuals(hist: pd.DataFrame, specs: dict[str, dict], bundles: dict
         d = hist[hist["instrument"] == name].set_index("date").sort_index()
         sp = {**dummy_spec, "group": spec["group"]}
         t, day = simulate(d, sp, name, rules, bt["costs"], bt["assume_yield"], bt["book_dv01_usd"],
-                          {}, clean=None, residual=bundles[name], require_carry=require_carry)
+                          {}, clean=None, residual=bundles[name], require_carry=require_carry,
+                          carry_only=carry_only)
         trades.append(t)
         daily.append(day)
     return pd.concat(trades, ignore_index=True), pd.concat(daily, ignore_index=True)
